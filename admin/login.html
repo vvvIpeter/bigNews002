@@ -38,6 +38,108 @@
     </div>
   </div>
 
+  <!-- bootstrap 模态框 -->
+  <!-- Button trigger modal -->
+  <button type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#myModal">
+    Launch demo modal
+  </button>
+
+  <!-- Modal -->
+  <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+              aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="myModalLabel">温馨提示</h4>
+        </div>
+        <div class="modal-body">
+          ...
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">确定</button>
+          <!-- <button type="button" class="btn btn-primary">Save changes</button> -->
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- <script>
+
+    (function (){
+      //登录按钮的点击事件
+      $('.input_sub').on('click', function (e) {
+        e.preventDefault();
+        var username = $('.input_txt').val().trim();
+        var password = $('.input_pass').val().trim();
+        if (username == "" || password == "") {
+          alert('用户名和密码不能为空');
+          return;
+        }
+        //发送ajax请求
+        $.ajax({
+          type: 'post',
+          url: 'http://localhost:8080/api/v1/admin/user/login',
+          data: {
+            username: username,
+            password: password
+          },
+          success: function (backData) {
+            console.log(backData);
+          }
+        })
+
+      })
+    })
+  </script> -->
+<script src="./libs/http.js"></script>
+  <script>
+    $(function () {
+      $('.input_sub').on('click', function (e) {
+        e.preventDefault();
+        var username = $('.input_txt').val().trim();
+        var password = $('.input_pass').val().trim();
+        if (username == "" || password == "") {
+          // alert('账号密码不能为空');
+          $('.modal-body').text('账号密码不能为空');
+          $('#myModal').modal();
+          return;
+        }
+        $.ajax({
+          type: 'post',
+          // url: 'http://localhost:8080/api/v1/admin/user/login',
+          url:BigNew.user_login,
+          data: {
+            username: username,
+            password: password
+          },
+          success: function (backData) {
+            console.log(backData);
+            if (backData.code == 200) {
+              //登录成功
+              // alert(backData.msg);
+              $('.modal-body').text(backData.msg);
+              $('#myModal').modal();
+              $('#myModal').on('hidden.bs.modal', function (e) {
+                // do something...
+              localStorage.setItem('token', backData.token);//键值对存起来
+
+                  //跳转到首页
+                window.location.href = './index.html';
+              })
+            
+            } else {
+              //登录失败
+              $('.modal-body').text(backData.msg);
+              $('#myModal').modal();
+
+            }
+          }
+        })
+
+      })
+
+    })
+  </script>
 </body>
 
 </html>
