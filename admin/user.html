@@ -79,6 +79,15 @@
             url: BigNew.user_detail,
             success: function (backData) {
                 console.log(backData);
+                //显示个人信息
+                // for (var key in backData.data)
+                // $('input.username').val(backData.data.username);
+                // $('input.nickname').val(backData.data.nickname);
+                // $('input.email').val(backData.data.email);
+                // $('input.password').val(backData.data.password);
+                for (var key in backData.data) {
+                    $('input.' + key).val(backData.data[key]);
+                }
                 $('.user_pic').attr('src', backData.data.userPic);
             }
         })
@@ -104,6 +113,8 @@
             processData: false,
             success: function (backData) {
                 console.log(backData);
+                //刷新父页面
+                parent.window.location.reload();
             }
         })
 
