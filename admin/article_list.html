@@ -73,5 +73,63 @@
         </div>
     </div>
 </body>
+<script src="./libs/http.js"></script>
+<!-- 准备一个模板  文章内容列表模板-->
+<script id="list-temp" type="text/html">
+    {{each data.data v}}
+    <tr>
+                        <td>{{v.title}}</td>
+                        <td>{{v.author}}</td>
+                        <td>{{v.category}}</td>
+                        <td class="text-center">{{v.date}}</td>
+                        <td class="text-center">{{v.state}}</td>
+                        <td class="text-center">
+                            <a href="article_edit.html" class="btn btn-default btn-xs" data-id={{v.id}}>编辑</a>
+                            <a href="javascript:void(0);" data-id={{v.id}} class="btn btn-danger btn-xs delete">删除</a>
+                        </td>
+                    </tr>
+    {{/each}}
+    
+</script>
+<script id="cateList_temp" type="text/html">
+     <option value="">所有分类</option>
+    {{each data v}}
+                            <option>{{v.name}}</option>                    
+    {{/each}}
+</script>
+<script>
+    $(function () {
+        //一进到页面就发送ajax请求  获取所有文章数据 显示在页面上
+        $.ajax({
+            type: 'get',
+            url: BigNew.article_query,
+            success: function (backData) {
+                console.log(backData)
+                //通过模板引擎 进行渲染
+                var resHtml = template('list-temp', backData);
+                $('tbody').html(resHtml);
+            }
+        });
+
+        //进入页面  发送ajax请求 获取所有文章类别 通过模板引擎 渲染到下拉菜单中
+        $.ajax({
+            type: 'get',
+            url: BigNew.category_list,
+            success: function (backData) {
+                // console.log(backData);
+                if (backData.code == 200) {
+                    //获取成功
+                    //调用模板引擎
+                    var resHtml = template('cateList_temp',backData)
+                    $('#selCategory').html(resHtml);
+                }
+
+
+            }
+        })
+
+
+    })
+</script>
 
 </html>

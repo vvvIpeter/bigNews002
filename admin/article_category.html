@@ -75,7 +75,7 @@
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal" id="btnCancel">取消</button>
                     <button type="button" class="btn btn-primary" id="btnAddorEdit">确定</button>
                 </div>
             </div>
@@ -90,7 +90,7 @@
                         <td>{{v.slug}}</td>
                         <td class="text-center">
                             <a href="javascript:void(0)" data-toggle="modal" data-target="#myModal" data-id= {{v.id}} class=" btn btn-info btn-xs">编辑</a>
-                            <a href="javascript:void(0)" data-id= {{v.id}} class="btn btn-danger btn-xs">删除</a>
+                            <a href="javascript:void(0)" data-id= {{v.id}} class="btn btn-danger btn-xs btn-delete" >删除</a>
                         </td>
                     </tr>
         {{/each}}
@@ -104,7 +104,7 @@
                     type: 'get',
                     url: BigNew.category_list,
                     success: function (backData) {
-                        console.log(backData);
+                        // console.log(backData);
                         //使用模板引擎进行渲染
                         var resHtml = template('artical-temp', backData)
                         $('tbody').html(resHtml);
@@ -153,7 +153,7 @@
                             slug: artMsg
                         },
                         success: function (backData) {
-                            console.log(backData);
+                            // console.log(backData);
                             if (backData.code == 201) {
                                 //关闭模态框
                                 $('#myModal').modal('hide');
@@ -184,9 +184,12 @@
                         // },
                         data: data,
                         success: function (backData) {
-                            console.log(backData);
+                            // console.log(backData);
                             if (backData.code == 200) {
                                 alert(backData.msg);//修改成功
+                                // 清空模态框里的内容
+                                $('#recipient-name').val("");
+                                $('#message-text').val("");
                                 //关闭模态框
                                 $('#myModal').modal('hide')
                                 //刷新数据
@@ -199,9 +202,36 @@
                 }
             })
 
+            //模态框中 取消按钮的点击事件
+            $('#btnCancel').on('click', function () {
+                //清空文本框数据 ：这是DOM原生的方法
+                $('form')[0].reset();
+                //隐藏模态框
+                $('#myModal').modal('hide')
+            })
+            //页面中  删除按钮的点击事件  委托注册
+            $('tbody').on('click', 'a.btn-delete', function () {
+                //获取类别id
+                var id = $(this).attr('data-id');
+                //发送ajax请求 删除文章类别
+                $.ajax({
+                    type:'post',
+                    url:BigNew.category_delete,
+                    data:{
+                        id:id
+                    },
+                    success:function(backData){
+                        console.log(backData);
+                        if(backData.code == 204){
+                            alert(backData.msg);
+                            //刷新页面
+                            getData();
+                        }
+                        
+                    }
+                })
 
-
-
+            })
 
 
 
