@@ -94,22 +94,31 @@
 <script id="cateList_temp" type="text/html">
      <option value="">所有分类</option>
     {{each data v}}
-                            <option>{{v.name}}</option>                    
+                            <option value="{{v.name}}">{{v.name}}</option>                    
     {{/each}}
 </script>
 <script>
     $(function () {
-        //一进到页面就发送ajax请求  获取所有文章数据 显示在页面上
-        $.ajax({
-            type: 'get',
-            url: BigNew.article_query,
-            success: function (backData) {
-                console.log(backData)
-                //通过模板引擎 进行渲染
-                var resHtml = template('list-temp', backData);
-                $('tbody').html(resHtml);
-            }
-        });
+        getAtical();
+        function getAtical() {
+            //一进到页面就发送ajax请求  获取所有文章数据 显示在页面上
+            $.ajax({
+                type: 'get',
+                url: BigNew.article_query,
+                data: {
+                    type: $('#selCategory').val().trim(),
+                    state: $('#selStatus').val().trim(),
+                    page: 1,
+                    perpage: 8
+                },
+                success: function (backData) {
+                    console.log(backData)
+                    //通过模板引擎 进行渲染
+                    var resHtml = template('list-temp', backData);
+                    $('tbody').html(resHtml);
+                }
+            });
+        }
 
         //进入页面  发送ajax请求 获取所有文章类别 通过模板引擎 渲染到下拉菜单中
         $.ajax({
@@ -120,14 +129,35 @@
                 if (backData.code == 200) {
                     //获取成功
                     //调用模板引擎
-                    var resHtml = template('cateList_temp',backData)
+                    var resHtml = template('cateList_temp', backData)
                     $('#selCategory').html(resHtml);
                 }
-
-
             }
         })
 
+        //筛选按钮 的点击事件
+        $('#btnSearch').on('click', function (e) {
+            e.preventDefault();
+            //获取用户选择的两个下拉框 的value 值 
+            // var type = $('#selCategory').val();
+            // var status = $('#selStatus').val();
+            //发送ajax请求  获取相应文章 渲染到页面上
+            //    $.ajax({
+            //         type: 'get',
+            //         url: BigNew.article_query,
+            //         data:{
+            //             typ:type,
+            //             state:status
+            //         },
+            //         success: function (backData) {
+            //             console.log(backData)
+            //             //通过模板引擎 进行渲染
+            //             var resHtml = template('list-temp', backData);
+            //             $('tbody').html(resHtml);
+            //         }
+            //     });
+            getAtical();
+        })
 
     })
 </script>
