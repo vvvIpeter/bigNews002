@@ -51,6 +51,36 @@
             </table>
         </div>
     </div>
+    <!-- bootstrap模态框 -->
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel">新增</h4>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <!-- 自己加的隐藏域 -->
+                        <input type="hidden" id="categoryId" name="id">
+                        <div class="form-group">
+                            <label for="recipient-name" class="control-label">文章类别:</label>
+                            <input type="text" class="form-control" id="recipient-name" name="name">
+                        </div>
+                        <div class="form-group">
+                            <label for="message-text" class="control-label">文章内容:</label>
+                            <input class="form-control" id="message-text" name="slug">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" id="btnAddorEdit">确定</button>
+                </div>
+            </div>
+        </div>
+    </div>
     <script src="./libs/http.js"></script>
     <!-- //创建一个模板 -->
     <script id="artical-temp" type="text/html">
@@ -59,30 +89,126 @@
                         <td>{{v.name}}</td>
                         <td>{{v.slug}}</td>
                         <td class="text-center">
-                            <a href="javascript:void(0)" data-toggle="modal" data-id= {{v.id}} class=" btn btn-info btn-xs">编辑</a>
+                            <a href="javascript:void(0)" data-toggle="modal" data-target="#myModal" data-id= {{v.id}} class=" btn btn-info btn-xs">编辑</a>
                             <a href="javascript:void(0)" data-id= {{v.id}} class="btn btn-danger btn-xs">删除</a>
                         </td>
                     </tr>
         {{/each}}
     </script>
     <script>
-       $(function(){
+        $(function () {
             //一进入页面 发送ajax请求 显示文章分类
-           $.ajax({
-               type: 'get',
-               url: BigNew.category_list,
-               success: function (backData) {
-                   console.log(backData);
-                   //使用模板引擎进行渲染
-                   var resHtml = template('artical-temp', backData)
-                   $('tbody').html(resHtml);
-               }
-           });
-           //新增分类的点击事件
-           $('#xinzengfenlei').on('click',function(){
-               //发送ajax请求 获取
-           })
-       })
+            getData();
+            function getData() {
+                $.ajax({
+                    type: 'get',
+                    url: BigNew.category_list,
+                    success: function (backData) {
+                        console.log(backData);
+                        //使用模板引擎进行渲染
+                        var resHtml = template('artical-temp', backData)
+                        $('tbody').html(resHtml);
+                    }
+                });
+            }
+            //    //新增分类的点击事件
+            //    $('#xinzengfenlei').on('click', function () {
+            //        //发送ajax请求 获取
+            //    })
+            //二: 到底是新增分类按钮  还是  编辑按钮 来弹出模态框
+            // bootstrap提供的方法  show.bs.modal 调用之后立即触发该事件
+            $('#myModal').on('show.bs.modal', function (e) {
+                // console.log(e.relatedTarget);  dom元素
+                //判断 
+                if (e.relatedTarget == $('#xinzengfenlei')[0]) {
+                    // 如果点的是新增分类  改变模态框里边按钮的内容
+                    $('#myModalLabel').text('新增分类');
+                    $('#btnAddorEdit').text('新增').addClass('btn-success').removeClass('btn-primary');
+                } else {
+                    //点的是编辑按钮  这个是页面中的编辑按钮
+                    $('#myModalLabel').text('编辑分类');
+                    $('#btnAddorEdit').text('编辑').addClass('btn-primary').removeClass('btn-success');
+                    //把当前需要编辑的这一行的 文章名 和内容显示在 模态框上
+                    $('#recipient-name').val($(e.relatedTarget).parent().prev().prev().text().trim());
+                    $('#message-text').val($(e.relatedTarget).parent().prev().text().trim());
+                    $('#categoryId').val($(e.relatedTarget).attr('data-id'));
+
+                }
+            })
+
+            //三:模态框中 新增/编辑按钮的点击事件
+            $('#btnAddorEdit').on('click', function () {
+                //判断点击的是模态框中的 新增 还是编辑
+                //第二大步 给按钮添加了bootstrap的 颜色的类
+                //如果当前点击的按钮又btn-success这类 那就是新增按钮
+                if ($(this).hasClass('btn-success')) {
+                    //模态框中的新增按钮  获取用户输入的内容  发送ajax请求 
+                    var artCategory = $('#recipient-name').val().trim();
+                    var artMsg = $('#message-text').val().trim();
+                    $.ajax({
+                        type: 'post',
+                        url: BigNew.category_add,
+                        data: {
+                            name: artCategory,
+                            slug: artMsg
+                        },
+                        success: function (backData) {
+                            console.log(backData);
+                            if (backData.code == 201) {
+                                //关闭模态框
+                                $('#myModal').modal('hide');
+                                //刷新当前页
+                                getData();
+                                // 清空模态框里的内容
+                                $('#recipient-name').val("");
+                                $('#message-text').val("");
+                            }
+                        }
+                    })
+                } else {
+                    //这就是编辑按钮  注意 是模态框中的 编辑按钮
+                    //获取要编辑的 文章类型  内容  和id
+                    // var categoryId = $('#categoryId').val().trim(); //id
+                    // var categoryName = $('#recipient-name').val().trim(); //文章类别名称
+                    // var categorySlug = $('#message-text').val().trim();//文章类别 别名
+                    // serialize() 是jquery提供的方法  
+                    var data = $('#myModal form').serialize();
+                    //发送ajax请求完成编辑
+                    $.ajax({
+                        type: 'post',
+                        url: BigNew.category_edit,
+                        // data: {
+                        //     id: categoryId,
+                        //     name: categoryName,
+                        //     slug: categorySlug
+                        // },
+                        data: data,
+                        success: function (backData) {
+                            console.log(backData);
+                            if (backData.code == 200) {
+                                alert(backData.msg);//修改成功
+                                //关闭模态框
+                                $('#myModal').modal('hide')
+                                //刷新数据
+                                getData();
+
+                            }
+
+                        }
+                    })
+                }
+            })
+
+
+
+
+
+
+
+
+
+
+        })
     </script>
 
 </html>
